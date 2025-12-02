@@ -554,7 +554,6 @@
         window.onload = function() {
             loadFromLocalStorage();
             renderModelList();
-            checkAPIKey();
         };
 
         // LocalStorageからデータを読み込む
@@ -591,17 +590,6 @@
             const duplicateCheck = localStorage.getItem('duplicate_check');
             if (duplicateCheck) {
                 duplicateCheckData = JSON.parse(duplicateCheck);
-            }
-        }
-
-        // APIキーチェック
-        function checkAPIKey() {
-            const apiKey = localStorage.getItem('gemini_api_key');
-            if (!apiKey) {
-                setTimeout(() => {
-                    alert('最初にGemini APIキーを設定してください');
-                    openSettings();
-                }, 500);
             }
         }
 
