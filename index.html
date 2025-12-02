@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎰 カテゴリ付きガチャツール</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2rem;
+        }
+
+        .settings-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .settings-btn:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .category-section {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .category-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .category-item:hover {
+            background: #e8e8e8;
+        }
+
+        .category-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .category-item label {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .gacha-button {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.4);
+            transition: all 0.3s;
+            margin: 30px auto;
+            display: block;
+        }
+
+        .gacha-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.6);
+        }
+
+        .gacha-button:active {
+            transform: scale(0.95);
+        }
+
+        .gacha-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .result-display {
+            min-height: 200px;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .result-display.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-display h3 {
+            color: #f5576c;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .result-display p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .result-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .history-section {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: #e8e8e8;
+        }
+
+        .history-item .category {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .history-item .result {
+            font-size: 0.9rem;
+            color: #666;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .history-item .timestamp {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-content h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .file-input-wrapper {
+            margin-bottom: 20px;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #5568d3;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .model-list {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .model-item {
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-model-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .gacha-button {
+                width: 150px;
+                height: 150px;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎰 カテゴリ付きガチャツール</h1>
+            <button class="settings-btn" onclick="openSettings()">⚙️ 設定</button>
+        </header>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📂 カテゴリ選択</h2>
+                <div class="file-input-wrapper">
+                    <label for="csvFile" class="file-input-label">📄 CSVを読み込む</label>
+                    <input type="file" id="csvFile" accept=".csv" onchange="loadCSV(event)">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="selectAll()">全選択</button>
+                    <button class="btn btn-secondary" onclick="deselectAll()">全解除</button>
+                </div>
+                <div class="category-section" id="categoryList">
+                    <p style="color: #999; text-align: center;">CSVファイルを読み込んでください</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🎲 ガチャ</h2>
+                <button class="gacha-button" id="gachaButton" onclick="performGacha()">
+                    ガチャを回す！
+                </button>
+                <div class="result-display" id="resultDisplay">
+                    <h3 id="resultCategory"></h3>
+                    <p id="resultText"></p>
+                    <div class="result-actions">
+                        <button class="btn btn-primary" onclick="performGacha()">🔄 再生成</button>
+                        <button class="btn btn-secondary" onclick="addToFavorites()">⭐ お気に入り</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2>📜 履歴</h2>
+                <button class="btn btn-secondary" onclick="clearHistory()">履歴をクリア</button>
+            </div>
+            <div class="history-section" id="historyList">
+                <p style="color: #999; text-align: center;">まだ履歴がありません</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 設定モーダル -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h2>⚙️ 設定</h2>
+            <div class="form-group">
+                <label for="apiKey">Gemini APIキー</label>
+                <input type="password" id="apiKey" placeholder="APIキーを入力してください">
+                <small style="color: #999;">※ブラウザのLocalStorageに保存されます</small>
+            </div>
+            <div class="form-group">
+                <label for="modelSelect">モデル選択</label>
+                <select id="modelSelect">
+                    <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (デフォルト)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="customModel">カスタムモデルを追加</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="customModel" placeholder="モデル名を入力">
+                    <button class="btn btn-primary" onclick="addCustomModel()">追加</button>
+                </div>
+            </div>
+            <div class="model-list" id="modelList"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+                <button class="btn btn-secondary" onclick="closeSettings()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 履歴詳細モーダル -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <h2 id="historyModalCategory"></h2>
+            <p id="historyModalResult" style="line-height: 1.6; margin: 20px 0;"></p>
+            <p id="historyModalTimestamp" style="color: #999; font-size: 0.9rem;"></p>
+            <p id="historyModalModel" style="color: #999; font-size: 0.9rem;"></p>
+            <button class="btn btn-secondary" onclick="closeHistoryModal()" style="margin-top: 20px;">閉じる</button>
+        </div>
+    </div>
+
+    <!-- ローディングオーバーレイ -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center;">
+            <div class="spinner"></div>
+            <div class="loading-text">ガチャを回しています...</div>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let categories = [];
+        let generationHistory = [];
+        let duplicateCheckData = {};
+        let currentResult = null;
+
+        // 初期化
+        window.onload = function() {
+            loadFromLocalStorage();
+            renderModelList();
+        };
+
+        // LocalStorageからデータを読み込む
+        function loadFromLocalStorage() {
+            const apiKey = localStorage.getItem('gemini_api_key');
+            if (apiKey) {
+                document.getElementById('apiKey').value = apiKey;
+            }
+
+            const models = localStorage.getItem('gemini_models');
+            if (models) {
+                const modelList = JSON.parse(models);
+                const select = document.getElementById('modelSelect');
+                select.innerHTML = '';
+                modelList.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    select.appendChild(option);
+                });
+            }
+
+            const selectedModel = localStorage.getItem('selected_model');
+            if (selectedModel) {
+                document.getElementById('modelSelect').value = selectedModel;
+            }
+
+            const history = localStorage.getItem('generation_history');
+            if (history) {
+                generationHistory = JSON.parse(history);
+                renderHistory();
+            }
+
+            const duplicateCheck = localStorage.getItem('duplicate_check');
+            if (duplicateCheck) {
+                duplicateCheckData = JSON.parse(duplicateCheck);
+            }
+        }
+
+        // CSV読み込み
+        function loadCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result;
+                    const lines = text.split('\n').filter(line => line.trim());
+
+                    categories = [];
+                    lines.forEach((line, index) => {
+                        if (index === 0 && (line.includes('カテゴリ名') || line.includes('category'))) {
+                            return; // ヘッダー行をスキップ
+                        }
+
+                        const parts = line.split(',');
+                        if (parts.length >= 2) {
+                            categories.push({
+                                name: parts[0].trim(),
+                                prompt: parts.slice(1).join(',').trim(),
+                                selected: false
+                            });
+                        }
+                    });
+
+                    if (categories.length === 0) {
+                        alert('CSVファイルの形式が正しくありません');
+                        return;
+                    }
+
+                    renderCategories();
+                } catch (error) {
+                    alert('CSVファイルの読み込みに失敗しました: ' + error.message);
+                }
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        // カテゴリ一覧を表示
+        function renderCategories() {
+            const container = document.getElementById('categoryList');
+            container.innerHTML = '';
+
+            categories.forEach((category, index) => {
+                const div = document.createElement('div');
+                div.className = 'category-item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `category-${index}`;
+                checkbox.checked = category.selected;
+                checkbox.onchange = () => {
+                    categories[index].selected = checkbox.checked;
+                };
+
+                const label = document.createElement('label');
+                label.htmlFor = `category-${index}`;
+                label.textContent = category.name;
+
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                container.appendChild(div);
+            });
+        }
+
+        // 全選択
+        function selectAll() {
+            categories.forEach(cat => cat.selected = true);
+            renderCategories();
+        }
+
+        // 全解除
+        function deselectAll() {
+            categories.forEach(cat => cat.selected = false);
+            renderCategories();
+        }
+
+        // ガチャ実行
+        async function performGacha() {
+            const selectedCategories = categories.filter(cat => cat.selected);
+
+            if (selectedCategories.length === 0) {
+                alert('カテゴリを1つ以上選択してください');
+                return;
+            }
+
+            const apiKey = localStorage.getItem('gemini_api_key');
+            if (!apiKey) {
+                alert('APIキーを設定してください');
+                openSettings();
+                return;
+            }
+
+            // ランダムにカテゴリを選択
+            const randomCategory = selectedCategories[Math.floor(Math.random() * selectedCategories.length)];
+
+            // ローディング表示
+            document.getElementById('loadingOverlay').classList.add('show');
+            document.getElementById('gachaButton').disabled = true;
+
+            try {
+                // 重複チェック用のプロンプト追加
+                let prompt = randomCategory.prompt;
+                if (duplicateCheckData[randomCategory.name] && duplicateCheckData[randomCategory.name].length > 0) {
+                    const previousResults = duplicateCheckData[randomCategory.name].map(item => item.result).join('、');
+                    prompt += `\n\n以下の内容と重複しないようにしてください: ${previousResults}`;
+                }
+
+                const model = document.getElementById('modelSelect').value;
+                const result = await callGeminiAPI(apiKey, model, prompt);
+
+                // 重複チェック
+                const similarity = checkSimilarity(randomCategory.name, result);
+                if (similarity > 0.8) {
+                    const useAnyway = confirm('類似した結果が過去に生成されています。このまま使用しますか？');
+                    if (!useAnyway) {
+                        document.getElementById('loadingOverlay').classList.remove('show');
+                        document.getElementById('gachaButton').disabled = false;
+                        return;
+                    }
+                }
+
+                // 結果を保存
+                currentResult = {
+                    category: randomCategory.name,
+                    result: result,
+                    timestamp: new Date().toISOString(),
+                    model: model
+                };
+
+                // 履歴に追加
+                generationHistory.unshift(currentResult);
+                if (generationHistory.length > 50) {
+                    generationHistory = generationHistory.slice(0, 50);
+                }
+                localStorage.setItem('generation_history', JSON.stringify(generationHistory));
+
+                // 重複チェックデータに追加
+                if (!duplicateCheckData[randomCategory.name]) {
+                    duplicateCheckData[randomCategory.name] = [];
+                }
+                duplicateCheckData[randomCategory.name].push({
+                    result: result,
+                    hash: simpleHash(result)
+                });
+                localStorage.setItem('duplicate_check', JSON.stringify(duplicateCheckData));
+
+                // 結果を表示
+                displayResult(currentResult);
+                renderHistory();
+
+            } catch (error) {
+                alert('生成に失敗しました: ' + error.message);
+            } finally {
+                document.getElementById('loadingOverlay').classList.remove('show');
+                document.getElementById('gachaButton').disabled = false;
+            }
+        }
+
+        // Gemini API呼び出し
+        async function callGeminiAPI(apiKey, model, prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                })
+            });
+
+            if (!response.ok) {
+                // HTTPステータスコードに応じたエラーメッセージ
+                if (response.status === 429) {
+                    throw new Error('API呼び出しの制限に達しました。しばらく待ってから再度お試しください。\n\n詳細: リクエスト数が多すぎるため、一時的に制限されています。数分後に再試行してください。');
+                } else if (response.status === 400) {
+                    throw new Error('リクエストが無効です。APIキーまたはモデル名を確認してください。');
+                } else if (response.status === 401 || response.status === 403) {
+                    throw new Error('APIキーが無効です。設定画面で正しいAPIキーを入力してください。');
+                } else if (response.status === 404) {
+                    throw new Error('指定されたモデルが見つかりません。モデル名を確認してください。');
+                } else {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.error?.message || `API呼び出しに失敗しました (ステータス: ${response.status})`);
+                }
+            }
+
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        // 類似性チェック
+        function checkSimilarity(category, text) {
+            if (!duplicateCheckData[category] || duplicateCheckData[category].length === 0) {
+                return 0;
+            }
+
+            let maxSimilarity = 0;
+            duplicateCheckData[category].forEach(item => {
+                const similarity = calculateSimilarity(text.toLowerCase(), item.result.toLowerCase());
+                if (similarity > maxSimilarity) {
+                    maxSimilarity = similarity;
+                }
+            });
+
+            return maxSimilarity;
+        }
+
+        // 文字列類似度計算（簡易版）
+        function calculateSimilarity(str1, str2) {
+            const longer = str1.length > str2.length ? str1 : str2;
+            const shorter = str1.length > str2.length ? str2 : str1;
+
+            if (longer.length === 0) return 1.0;
+
+            const editDistance = levenshteinDistance(longer, shorter);
+            return (longer.length - editDistance) / longer.length;
+        }
+
+        // Levenshtein距離
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+
+            for (let i = 0; i <= str2.length; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= str1.length; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= str2.length; i++) {
+                for (let j = 1; j <= str1.length; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+
+            return matrix[str2.length][str1.length];
+        }
+
+        // 簡易ハッシュ
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString(36);
+        }
+
+        // 結果表示
+        function displayResult(result) {
+            document.getElementById('resultCategory').textContent = `🎉 ${result.category}`;
+            document.getElementById('resultText').textContent = result.result;
+            document.getElementById('resultDisplay').classList.add('show');
+        }
+
+        // 履歴表示
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+
+            if (generationHistory.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center;">まだ履歴がありません</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            const displayHistory = generationHistory.slice(0, 10);
+
+            displayHistory.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.onclick = () => showHistoryDetail(item);
+
+                const category = document.createElement('div');
+                category.className = 'category';
+                category.textContent = item.category;
+
+                const result = document.createElement('div');
+                result.className = 'result';
+                result.textContent = item.result;
+
+                const timestamp = document.createElement('div');
+                timestamp.className = 'timestamp';
+                timestamp.textContent = new Date(item.timestamp).toLocaleString('ja-JP');
+
+                div.appendChild(category);
+                div.appendChild(result);
+                div.appendChild(timestamp);
+                container.appendChild(div);
+            });
+        }
+
+        // 履歴詳細表示
+        function showHistoryDetail(item) {
+            document.getElementById('historyModalCategory').textContent = item.category;
+            document.getElementById('historyModalResult').textContent = item.result;
+            document.getElementById('historyModalTimestamp').textContent = '生成日時: ' + new Date(item.timestamp).toLocaleString('ja-JP');
+            document.getElementById('historyModalModel').textContent = 'モデル: ' + item.model;
+            document.getElementById('historyModal').classList.add('show');
+        }
+
+        // 履歴モーダルを閉じる
+        function closeHistoryModal() {
+            document.getElementById('historyModal').classList.remove('show');
+        }
+
+        // 履歴クリア
+        function clearHistory() {
+            if (confirm('履歴をすべてクリアしますか？')) {
+                generationHistory = [];
+                duplicateCheckData = {};
+                localStorage.removeItem('generation_history');
+                localStorage.removeItem('duplicate_check');
+                renderHistory();
+            }
+        }
+
+        // お気に入り追加（簡易実装）
+        function addToFavorites() {
+            if (!currentResult) return;
+            alert('お気に入りに追加しました！（この機能は簡易実装です）');
+        }
+
+        // 設定モーダルを開く
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('show');
+            renderModelList();
+        }
+
+        // 設定モーダルを閉じる
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        // 設定を保存
+        function saveSettings() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (!apiKey) {
+                alert('APIキーを入力してください');
+                return;
+            }
+
+            localStorage.setItem('gemini_api_key', apiKey);
+
+            const selectedModel = document.getElementById('modelSelect').value;
+            localStorage.setItem('selected_model', selectedModel);
+
+            alert('設定を保存しました');
+            closeSettings();
+        }
+
+        // カスタムモデル追加
+        function addCustomModel() {
+            const modelName = document.getElementById('customModel').value.trim();
+            if (!modelName) {
+                alert('モデル名を入力してください');
+                return;
+            }
+
+            let models = localStorage.getItem('gemini_models');
+            let modelList = models ? JSON.parse(models) : ['gemini-2.5-flash-lite'];
+
+            if (modelList.includes(modelName)) {
+                alert('このモデルは既に追加されています');
+                return;
+            }
+
+            modelList.push(modelName);
+            localStorage.setItem('gemini_models', JSON.stringify(modelList));
+
+            const select = document.getElementById('modelSelect');
+            const option = document.createElement('option');
+            option.value = modelName;
+            option.textContent = modelName;
+            select.appendChild(option);
+
+            document.getElementById('customModel').value = '';
+            renderModelList();
+        }
+
+        // モデルリスト表示
+        function renderModelList() {
+            const models = localStorage.getItem('gemini_models');
+            const modelList = models ? JSON.parse(models) : ['gemini-2.5-flash-lite'];
+
+            const container = document.getElementById('modelList');
+            container.innerHTML = '';
+
+            modelList.forEach(model => {
+                if (model === 'gemini-2.5-flash-lite') return; // デフォルトモデルは削除不可
+
+                const div = document.createElement('div');
+                div.className = 'model-item';
+
+                const span = document.createElement('span');
+                span.textContent = model;
+
+                const button = document.createElement('button');
+                button.className = 'remove-model-btn';
+                button.textContent = '削除';
+                button.onclick = () => removeModel(model);
+
+                div.appendChild(span);
+                div.appendChild(button);
+                container.appendChild(div);
+            });
+        }
+
+        // モデル削除
+        function removeModel(modelName) {
+            if (!confirm(`${modelName}を削除しますか？`)) return;
+
+            let models = localStorage.getItem('gemini_models');
+            let modelList = models ? JSON.parse(models) : ['gemini-2.5-flash-lite'];
+
+            modelList = modelList.filter(m => m !== modelName);
+            localStorage.setItem('gemini_models', JSON.stringify(modelList));
+
+            const select = document.getElementById('modelSelect');
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === modelName) {
+                    select.remove(i);
+                    break;
+                }
+            }
+
+            renderModelList();
+        }
+
+        // モーダルの外側クリックで閉じる
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        };
+    </script>
+</body>
+</html>
