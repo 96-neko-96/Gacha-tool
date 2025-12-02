@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎰 VTuberガチャツール</title>
+    <title>🎰 カテゴリ付きガチャツール</title>
     <style>
         * {
             margin: 0;
@@ -447,7 +447,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎰 VTuberガチャツール</h1>
+            <h1>🎰 カテゴリ付きガチャツール</h1>
             <button class="settings-btn" onclick="openSettings()">⚙️ 設定</button>
         </header>
 
@@ -506,7 +506,7 @@
             <div class="form-group">
                 <label for="modelSelect">モデル選択</label>
                 <select id="modelSelect">
-                    <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp (デフォルト)</option>
+                    <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (デフォルト)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -785,8 +785,19 @@
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'API呼び出しに失敗しました');
+                // HTTPステータスコードに応じたエラーメッセージ
+                if (response.status === 429) {
+                    throw new Error('API呼び出しの制限に達しました。しばらく待ってから再度お試しください。\n\n詳細: リクエスト数が多すぎるため、一時的に制限されています。数分後に再試行してください。');
+                } else if (response.status === 400) {
+                    throw new Error('リクエストが無効です。APIキーまたはモデル名を確認してください。');
+                } else if (response.status === 401 || response.status === 403) {
+                    throw new Error('APIキーが無効です。設定画面で正しいAPIキーを入力してください。');
+                } else if (response.status === 404) {
+                    throw new Error('指定されたモデルが見つかりません。モデル名を確認してください。');
+                } else {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.error?.message || `API呼び出しに失敗しました (ステータス: ${response.status})`);
+                }
             }
 
             const data = await response.json();
@@ -972,7 +983,7 @@
             }
 
             let models = localStorage.getItem('gemini_models');
-            let modelList = models ? JSON.parse(models) : ['gemini-2.0-flash-exp'];
+            let modelList = models ? JSON.parse(models) : ['gemini-2.5-flash-lite'];
 
             if (modelList.includes(modelName)) {
                 alert('このモデルは既に追加されています');
@@ -995,13 +1006,13 @@
         // モデルリスト表示
         function renderModelList() {
             const models = localStorage.getItem('gemini_models');
-            const modelList = models ? JSON.parse(models) : ['gemini-2.0-flash-exp'];
+            const modelList = models ? JSON.parse(models) : ['gemini-2.5-flash-lite'];
 
             const container = document.getElementById('modelList');
             container.innerHTML = '';
 
             modelList.forEach(model => {
-                if (model === 'gemini-2.0-flash-exp') return; // デフォルトモデルは削除不可
+                if (model === 'gemini-2.5-flash-lite') return; // デフォルトモデルは削除不可
 
                 const div = document.createElement('div');
                 div.className = 'model-item';
@@ -1025,7 +1036,7 @@
             if (!confirm(`${modelName}を削除しますか？`)) return;
 
             let models = localStorage.getItem('gemini_models');
-            let modelList = models ? JSON.parse(models) : ['gemini-2.0-flash-exp'];
+            let modelList = models ? JSON.parse(models) : ['gemini-2.5-flash-lite'];
 
             modelList = modelList.filter(m => m !== modelName);
             localStorage.setItem('gemini_models', JSON.stringify(modelList));
